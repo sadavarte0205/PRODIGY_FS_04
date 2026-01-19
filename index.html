@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Chat App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="chat-box">
+
+    <h2>Real-Time Chat</h2>
+
+    <!-- User Selection -->
+    <label>Select User:</label>
+    <select id="userSelect">
+        <option value="">-- Select --</option>
+        <option value="Vaishnavi">Vaishnavi</option>
+        <option value="Vaishali">Vaishali</option>
+    </select>
+    <button onclick="joinChat()">Join Chat</button>
+
+    <h3>Messages</h3>
+    <ul id="messages"></ul>
+
+    <input id="messageInput" placeholder="Type message...">
+    <button onclick="sendMessage()">Send</button>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    const socket = io();
+    let username = "";
+
+    function joinChat() {
+        username = document.getElementById("userSelect").value;
+        if (!username) {
+            alert("Please select a user");
+            return;
+        }
+        socket.emit("join", username);
+        alert(username + " joined the chat");
+    }
+
+    function sendMessage() {
+        if (!username) {
+            alert("Please join chat first");
+            return;
+        }
+
+        const msg = document.getElementById("messageInput").value;
+
+        socket.emit("chat message", {
+            user: username,
+            message: msg,
+            time: new Date().toLocaleTimeString()
+        });
+
+        document.getElementById("messageInput").value = "";
+    }
+
+    socket.on("chat message", (data) => {
+        const li = document.createElement("li");
+        li.textContent = `${data.time} | ${data.user}: ${data.message}`;
+        document.getElementById("messages").appendChild(li);
+    });
+</script>
+
+</body>
+</html>
